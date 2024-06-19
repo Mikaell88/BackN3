@@ -2,6 +2,7 @@ const sql = require("mssql");
 const express = require("express");
 const app = express();
 const port = 3000;
+const { createDatabase, createTableIfNotExists, execSQLQuery } = require("./database");
 
 app.use(express.json());
 
@@ -19,39 +20,6 @@ const config = {
   },
 };
 
-async function createTableIfNotExists(conn) {
-  const request = new sql.Request(conn);
-  const tableExistsQuery = `
-        IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Clientes')
-        BEGIN
-            CREATE TABLE Clientes (
-                ID INT PRIMARY KEY,
-                Nome NVARCHAR(150) NOT NULL,
-                Email NVARCHAR(150)
-            );
-        END
-    `;
-  try {
-    await request.query(tableExistsQuery);
-    console.log('Tabela "Clientes" garantida no banco de dados');
-  } catch (err) {
-    console.error('Erro ao garantir a tabela "Clientes": ' + err);
-  }
-}
-
-async function createDatabase(conn) {
-  try {
-    // SQL query to create a new database
-    const createDbQuery = `CREATE DATABASE N3`;
-
-    // Execute the query
-    await conn.request().query(createDbQuery);
-    console.log("Database N3 created successfully");
-  } catch (err) {
-    console.error("Error creating database:", err);
-  }
-}
-
 sql
   .connect(config)
   .then(async (conn) => {
@@ -61,20 +29,6 @@ sql
     global.conn = conn;
   })
   .catch((err) => console.log("Erro na conexão: " + err));
-
-function execSQLQuery(sqlQry, params, res) {
-  const request = global.conn.request();
-  for (const param of params) {
-    request.input(param.name, param.type, param.value);
-  }
-  request
-    .query(sqlQry)
-    .then((result) => res.json(result.recordset))
-    .catch((err) => {
-      console.error("Erro ao executar a consulta SQL: " + err);
-      res.status(500).json({ error: "Erro interno do servidor ao executar a consulta SQL." });
-    });
-}
 
 // Middleware para permitir solicitações CORS
 app.use((req, res, next) => {
@@ -151,5 +105,5 @@ app.put("/customers/:id", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("Example app listening on port: " + port);
+  console.log("App listening on port: " + port);
 });
