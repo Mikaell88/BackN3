@@ -1,8 +1,7 @@
-const sql = require("mssql");
 const express = require("express");
 const app = express();
 const port = 3000;
-const { createDatabase, createTableIfNotExists, execSQLQuery } = require("./database");
+const { execSQLQuery, db } = require("./database");
 
 app.use(express.json());
 
@@ -20,15 +19,7 @@ const config = {
   },
 };
 
-sql
-  .connect(config)
-  .then(async (conn) => {
-    console.log("Connected to SQL Server");
-    await createDatabase(conn);
-    await createTableIfNotExists(conn);
-    global.conn = conn;
-  })
-  .catch((err) => console.log("Erro na conexão: " + err));
+db.connectDatabase(config);
 
 // Middleware para permitir solicitações CORS
 app.use((req, res, next) => {
