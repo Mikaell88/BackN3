@@ -22,9 +22,9 @@ async function createTableClientesIfNotExists() {
           IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Clientes')
           BEGIN
               CREATE TABLE Clientes (
-                  ID INT IDENTITY(1,1) PRIMARY KEY,
-                  Nome NVARCHAR(150) NOT NULL,
-                  Email NVARCHAR(150)
+                  id INT IDENTITY(1,1) PRIMARY KEY,
+                  name NVARCHAR(150) NOT NULL,
+                  email NVARCHAR(150) NOT NULL UNIQUE,
               );
           END
       `;
@@ -41,8 +41,9 @@ async function createTableDentistIfNotExists() {
           IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Dentistas')
           BEGIN
               CREATE TABLE Dentistas (
-                  ID INT IDENTITY(1,1) PRIMARY KEY,
-                  Nome NVARCHAR(150) NOT NULL,
+                  id INT IDENTITY(1,1) PRIMARY KEY,
+                  cro INT NOT NULL UNIQUE,
+                  name NVARCHAR(150) NOT NULL,
               );
           END
       `;
@@ -59,12 +60,12 @@ async function createTableConsultasIfNotExists() {
           IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Consultas')
             BEGIN
                 CREATE TABLE Consultas (
-                    ID INT IDENTITY(1,1) PRIMARY KEY,
-                    ClienteID INT NOT NULL,
-                    DentistaID INT NOT NULL,
-                    DataEHora DATETIME NOT NULL,
-                    FOREIGN KEY (ClienteID) REFERENCES Clientes(ID),
-                    FOREIGN KEY (DentistaID) REFERENCES Dentistas(ID)
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    clienteId INT NOT NULL,
+                    dentistaId INT NOT NULL,
+                    dateTime DATETIME NOT NULL,
+                    FOREIGN KEY (clienteId) REFERENCES clientes(id),
+                    FOREIGN KEY (dentistaId) REFERENCES dentistas(id)
                 );
             END
       `;
@@ -82,27 +83,24 @@ async function createStoredProcedureIfNotExists() {
             BEGIN
                 EXEC('
                 CREATE PROCEDURE sp_InsertConsulta
-                    @ClienteID INT,
-                    @DentistaID INT,
-                    @DataEHora DATETIME
+                    @clienteId INT,
+                    @dentistaId INT,
+                    @dateTime DATETIME
                 AS
                 BEGIN
-                    -- Check if there''s a conflicting appointment
                     IF EXISTS (
                         SELECT 1
                         FROM Consultas
-                        WHERE DentistaID = @DentistaID
-                          AND ABS(DATEDIFF(MINUTE, DataEHora, @DataEHora)) < 60
+                        WHERE dentistaId = @dentistaId
+                          AND ABS(DATEDIFF(MINUTE, dateTime, @dateTime)) < 60
                     )
                     BEGIN
-                        -- Conflict found, raise an error
-                        RAISERROR(''Another consultation is already scheduled within an hour for this dentist.'', 16, 1);
+                        RAISERROR(''Já existe uma consulta para este dentista neste periodo.'', 16, 1);
                         RETURN;
                     END
 
-                    -- No conflict, proceed with the insertion
-                    INSERT INTO Consultas (ClienteID, DentistaID, DataEHora)
-                    VALUES (@ClienteID, @DentistaID, @DataEHora);
+                    INSERT INTO Consultas (clienteId, dentistaId, dateTime)
+                    VALUES (@ClienteId, @dentistaId, @dateTime);
                 END
                 ')
             END

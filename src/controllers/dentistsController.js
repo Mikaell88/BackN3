@@ -16,11 +16,13 @@ const dentistsController = {
   async insertDentist(req, res) {
     try {
       const name = req.body.name;
-      if (!name) {
-        throw new Error("Nome é um campo obrigatório.");
+      const cro = req.body.cro;
+      if (!name || !cro) {
+        throw new Error("name e cro são campos obrigatórios.");
       }
-      await execSQLQuery("INSERT INTO Dentistas(Nome) VALUES(@Nome)", [
-        { name: "Nome", type: sql.NVarChar, value: name },
+      await execSQLQuery("INSERT INTO Dentistas(name, cro) VALUES(@name, @cro)", [
+        { name: "name", type: sql.NVarChar, value: name },
+        { name: "cro", type: sql.Int, value: cro },
       ]);
       return res.status(200).json("registro inserido com sucesso");
     } catch (error) {
@@ -32,9 +34,9 @@ const dentistsController = {
     try {
       const id = parseInt(req.params.id);
       if (!id) {
-        throw new Error("ID inválido.");
+        throw new Error("id inválido.");
       }
-      const result = await execSQLQuery("SELECT * FROM Dentistas WHERE ID=@id", [
+      const result = await execSQLQuery("SELECT * FROM Dentistas WHERE id=@id", [
         { name: "id", type: sql.Int, value: id },
       ]);
       if (!result.recordset[0]) throw new Error("registro não encontrado");
@@ -48,9 +50,9 @@ const dentistsController = {
     try {
       const id = parseInt(req.params.id);
       if (!id) {
-        throw new Error("ID inválido.");
+        throw new Error("id inválido.");
       }
-      await execSQLQuery("DELETE FROM Dentistas WHERE ID=@id", [{ name: "id", type: sql.Int, value: id }]);
+      await execSQLQuery("DELETE FROM Dentistas WHERE id=@id", [{ name: "id", type: sql.Int, value: id }]);
       return res.status(200).json("registro deletado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
@@ -61,13 +63,22 @@ const dentistsController = {
     try {
       const id = parseInt(req.params.id);
       const name = req.body.name;
-      if (!id || !name) {
-        throw new Error("ID e nome são campos obrigatórios.");
+      const cro = req.body.cro;
+      if (!id) {
+        throw new Error("id inválido.");
       }
-      await execSQLQuery("UPDATE Dentistas SET Nome=@name WHERE ID=@id", [
-        { name: "id", type: sql.Int, value: id },
-        { name: "name", type: sql.NVarChar, value: name },
-      ]);
+      if (name) {
+        await execSQLQuery("UPDATE Dentistas SET name=@name WHERE id=@id", [
+          { name: "id", type: sql.Int, value: id },
+          { name: "name", type: sql.NVarChar, value: name },
+        ]);
+      }
+      if (cro) {
+        await execSQLQuery("UPDATE Dentistas SET cro=@cro WHERE id=@id", [
+          { name: "id", type: sql.Int, value: id },
+          { name: "cro", type: sql.NVarChar, value: cro },
+        ]);
+      }
       return res.status(200).json("registro alterado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);

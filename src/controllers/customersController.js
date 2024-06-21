@@ -16,11 +16,11 @@ const customersController = {
       const name = req.body.name;
       const email = req.body.email;
       if (!name || !email) {
-        throw new Error("Nome e email são campos obrigatórios.");
+        throw new Error("name e email são campos obrigatórios.");
       }
-      await execSQLQuery("INSERT INTO Clientes(Nome, Email) VALUES(@Nome, @Email)", [
-        { name: "Nome", type: sql.NVarChar, value: name },
-        { name: "Email", type: sql.NVarChar, value: email },
+      await execSQLQuery("INSERT INTO Clientes(name, email) VALUES(@name, @email)", [
+        { name: "name", type: sql.NVarChar, value: name },
+        { name: "email", type: sql.NVarChar, value: email },
       ]);
       return res.status(200).json("registro inserido com sucesso");
     } catch (error) {
@@ -32,9 +32,9 @@ const customersController = {
     try {
       const id = parseInt(req.params.id);
       if (!id) {
-        throw new Error("ID inválido.");
+        throw new Error("id inválido.");
       }
-      const result = await execSQLQuery("SELECT * FROM Clientes WHERE ID=@id", [
+      const result = await execSQLQuery("SELECT * FROM Clientes WHERE id=@id", [
         { name: "id", type: sql.Int, value: id },
       ]);
       if (!result.recordset[0]) throw new Error("registro não encontrado");
@@ -48,11 +48,9 @@ const customersController = {
     try {
       const id = parseInt(req.params.id);
       if (!id) {
-        throw new Error("ID inválido.");
+        throw new Error("id inválido.");
       }
-      await execSQLQuery("DELETE FROM Clientes WHERE ID=@id", [
-        { name: "id", type: sql.Int, value: id },
-      ]);
+      await execSQLQuery("DELETE FROM Clientes WHERE id=@id", [{ name: "id", type: sql.Int, value: id }]);
       return res.status(200).json("registro deletado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
@@ -64,14 +62,18 @@ const customersController = {
       const id = parseInt(req.params.id);
       const name = req.body.name;
       const email = req.body.email; // Corrigido aqui
-      if (!id || !name || !email) {
-        throw new Error("ID, nome e email são campos obrigatórios.");
+      if (name) {
+        await execSQLQuery("UPDATE Clientes SET name=@name WHERE id=@id", [
+          { name: "id", type: sql.Int, value: id },
+          { name: "name", type: sql.NVarChar, value: name },
+        ]);
       }
-      await execSQLQuery("UPDATE Clientes SET Nome=@name, Email=@email WHERE ID=@id", [
-        { name: "id", type: sql.Int, value: id },
-        { name: "name", type: sql.NVarChar, value: name },
-        { name: "email", type: sql.NVarChar, value: email },
-      ]);
+      if (email) {
+        await execSQLQuery("UPDATE Clientes SET email=@email WHERE id=@id", [
+          { name: "id", type: sql.Int, value: id },
+          { name: "email", type: sql.NVarChar, value: email },
+        ]);
+      }
       return res.status(200).json("registro alterado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);

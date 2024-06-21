@@ -1,37 +1,174 @@
 openapi: 3.0.1
 info:
-  title: Customer API
-  description: API for managing customers
+  title: Dentists, Customers, and Appointments API
+  description: API for managing dentists, customers, and appointments
   version: 1.0.0
 servers:
   - url: http://localhost:3000
 paths:
-  /test-connection:
+  /dentists:
     get:
-      summary: Test the database connection
+      summary: Get all dentists
       responses:
         '200':
-          description: Connection successful
+          description: A list of dentists
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Connection successful
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    cro:
+                      type: integer
+        '400':
+          description: Error fetching dentists
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
+    post:
+      summary: Add a new dentist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                cro:
+                  type: integer
+              required:
+                - name
+                - cro
+      responses:
+        '200':
+          description: Dentist added successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro inserido com sucesso
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: name e cro são campos obrigatórios.
         '500':
-          description: Connection failed
+          description: Error adding dentist
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
+  /dentists/{id}:
+    get:
+      summary: Get dentist by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single dentist
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  id:
+                    type: integer
+                  name:
                     type: string
-                    example: Falha na conexão
-                  error:
-                    type: string
+                  cro:
+                    type: integer
+        '400':
+          description: Invalid ID or error fetching dentist
+          content:
+            application/json:
+              schema:
+                type: string
+                examples:
+                  invalidId:
+                    summary: Invalid ID
+                    value: id inválido.
+                  notFound:
+                    summary: Dentist not found
+                    value: registro não encontrado
+    delete:
+      summary: Delete dentist by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dentist deleted successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro deletado com sucesso
+        '400':
+          description: Invalid ID or error deleting dentist
+          content:
+            application/json:
+              schema:
+                type: string
+                example: id inválido.
+    put:
+      summary: Update dentist by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                cro:
+                  type: integer
+      responses:
+        '200':
+          description: Dentist updated successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro alterado com sucesso
+        '400':
+          description: Invalid ID or error updating dentist
+          content:
+            application/json:
+              schema:
+                type: string
+                examples:
+                  invalidId:
+                    summary: Invalid ID
+                    value: id inválido.
+                  errorMessage:
+                    summary: Error message
+                    value: Error message
   /customers:
     get:
       summary: Get all customers
@@ -45,12 +182,19 @@ paths:
                 items:
                   type: object
                   properties:
-                    ID:
+                    id:
                       type: integer
-                    Nome:
+                    name:
                       type: string
-                    Email:
+                    email:
                       type: string
+        '400':
+          description: Error fetching customers
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
     post:
       summary: Add a new customer
       requestBody:
@@ -60,29 +204,35 @@ paths:
             schema:
               type: object
               properties:
-                id:
-                  type: integer
                 name:
                   type: string
                 email:
                   type: string
               required:
-                - id
                 - name
                 - email
       responses:
         '200':
           description: Customer added successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro inserido com sucesso
         '400':
           description: Missing required fields
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: ID, nome e email são campos obrigatórios.
+                type: string
+                example: name e email são campos obrigatórios.
+        '500':
+          description: Error adding customer
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
   /customers/{id}:
     get:
       summary: Get customer by ID
@@ -100,22 +250,25 @@ paths:
               schema:
                 type: object
                 properties:
-                  ID:
+                  id:
                     type: integer
-                  Nome:
+                  name:
                     type: string
-                  Email:
+                  email:
                     type: string
         '400':
-          description: Invalid ID
+          description: Invalid ID or error fetching customer
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: ID inválido.
+                type: string
+                examples:
+                  invalidId:
+                    summary: Invalid ID
+                    value: id inválido.
+                  notFound:
+                    summary: Customer not found
+                    value: registro não encontrado
     delete:
       summary: Delete customer by ID
       parameters:
@@ -127,16 +280,18 @@ paths:
       responses:
         '200':
           description: Customer deleted successfully
-        '400':
-          description: Invalid ID
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: ID inválido.
+                type: string
+                example: registro deletado com sucesso
+        '400':
+          description: Invalid ID or error deleting customer
+          content:
+            application/json:
+              schema:
+                type: string
+                example: id inválido.
     put:
       summary: Update customer by ID
       parameters:
@@ -156,19 +311,119 @@ paths:
                   type: string
                 email:
                   type: string
-              required:
-                - name
-                - email
       responses:
         '200':
           description: Customer updated successfully
-        '400':
-          description: Missing required fields or invalid ID
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: ID, nome e email são campos obrigatórios.
+                type: string
+                example: registro alterado com sucesso
+        '400':
+          description: Invalid ID or error updating customer
+          content:
+            application/json:
+              schema:
+                type: string
+                examples:
+                  invalidId:
+                    summary: Invalid ID
+                    value: id inválido.
+                  errorMessage:
+                    summary: Error message
+                    value: Error message
+  /appointments:
+    get:
+      summary: Get all appointments
+      responses:
+        '200':
+          description: A list of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    dentistId:
+                      type: integer
+                    customerId:
+                      type: integer
+                    dateTime:
+                      type: string
+                      format: date-time
+        '400':
+          description: Error fetching appointments
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
+    post:
+      summary: Add a new appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dentistId:
+                  type: integer
+                customerId:
+                  type: integer
+                dateTime:
+                  type: string
+                  format: date-time
+              required:
+                - dentistId
+                - customerId
+                - dateTime
+      responses:
+        '200':
+          description: Appointment added successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro inserido com sucesso
+        '400':
+          description: Error adding appointment
+          content:
+            application/json:
+              schema:
+                type: string
+                example: cliente não encontrado
+        '500':
+          description: Error adding appointment
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error message
+  /appointments/{id}:
+    delete:
+      summary: Delete appointment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: registro deletado com sucesso
+        '400':
+          description: Invalid ID or error deleting appointment
+          content:
+            application/json:
+              schema:
+                type: string
+                example: id inválido.
