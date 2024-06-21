@@ -133,21 +133,18 @@ async function createDatabase() {
   }
 }
 
-async function execSQLQuery(sqlQry, params, res) {
+async function execSQLQuery(sqlQry, params) {
   const request = db.conn.request();
   if (params) {
     for (const param of params) {
       request.input(param.name, param.type, param.value);
     }
   }
-  request
-    .query(sqlQry)
-    .then((result) => res.json(result.recordset))
-    .catch((err) => {
-      console.error("Erro ao executar a consulta SQL: " + err);
-      res.status(500).json({ error: "Erro interno do servidor ao executar a consulta SQL." });
-    });
+  return request.query(sqlQry).catch((err) => {
+    throw new Error("Erro ao executar a consulta SQL: " + err);
+  });
 }
+
 
 Object.assign(db, {
   connectDatabase,
