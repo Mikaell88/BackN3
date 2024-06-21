@@ -40,6 +40,7 @@ app.get("/test-connection", (req, res) => {
 });
 
 app.use("/customers", require("./routes/customers"));
+app.use("/dentists", require("./routes/dentists"));
 
 app.listen(port, () => {
   console.log("App listening on port: " + port);
