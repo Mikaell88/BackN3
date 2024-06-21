@@ -18,11 +18,11 @@ const customersController = {
       if (!name || !email) {
         throw new Error("Nome e email são campos obrigatórios.");
       }
-      const result = await execSQLQuery("INSERT INTO Clientes(Nome, Email) VALUES(@Nome, @Email)", [
+      await execSQLQuery("INSERT INTO Clientes(Nome, Email) VALUES(@Nome, @Email)", [
         { name: "Nome", type: sql.NVarChar, value: name },
         { name: "Email", type: sql.NVarChar, value: email },
       ]);
-      return res.status(200).json(result.recordset);
+      return res.status(200).json("registro inserido com sucesso");
     } catch (error) {
       return res.status(500).send(error.message);
     }
@@ -37,7 +37,8 @@ const customersController = {
       const result = await execSQLQuery("SELECT * FROM Clientes WHERE ID=@id", [
         { name: "id", type: sql.Int, value: id },
       ]);
-      return res.status(200).json(result.recordset);
+      if (!result.recordset[0]) throw new Error("registro não encontrado");
+      return res.status(200).json(result.recordset[0]);
     } catch (error) {
       return res.status(400).json(error.message);
     }
@@ -49,10 +50,10 @@ const customersController = {
       if (!id) {
         throw new Error("ID inválido.");
       }
-      const result = await execSQLQuery("DELETE FROM Clientes WHERE ID=@id", [
+      await execSQLQuery("DELETE FROM Clientes WHERE ID=@id", [
         { name: "id", type: sql.Int, value: id },
       ]);
-      return res.status(200).json(result.recordset);
+      return res.status(200).json("registro deletado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
     }
@@ -66,12 +67,12 @@ const customersController = {
       if (!id || !name || !email) {
         throw new Error("ID, nome e email são campos obrigatórios.");
       }
-      const result = await execSQLQuery("UPDATE Clientes SET Nome=@name, Email=@email WHERE ID=@id", [
+      await execSQLQuery("UPDATE Clientes SET Nome=@name, Email=@email WHERE ID=@id", [
         { name: "id", type: sql.Int, value: id },
         { name: "name", type: sql.NVarChar, value: name },
         { name: "email", type: sql.NVarChar, value: email },
       ]);
-      return res.status(200).json(result.recordset);
+      return res.status(200).json("registro alterado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
     }

@@ -19,10 +19,10 @@ const dentistsController = {
       if (!name) {
         throw new Error("Nome é um campo obrigatório.");
       }
-      const result = await execSQLQuery("INSERT INTO Dentistas(Nome) VALUES(@Nome)", [
+      await execSQLQuery("INSERT INTO Dentistas(Nome) VALUES(@Nome)", [
         { name: "Nome", type: sql.NVarChar, value: name },
       ]);
-      return res.status(200).json(result.recordset);
+      return res.status(200).json("registro inserido com sucesso");
     } catch (error) {
       return res.status(500).send(error.message);
     }
@@ -37,7 +37,8 @@ const dentistsController = {
       const result = await execSQLQuery("SELECT * FROM Dentistas WHERE ID=@id", [
         { name: "id", type: sql.Int, value: id },
       ]);
-      return res.status(200).json(result.recordset);
+      if (!result.recordset[0]) throw new Error("registro não encontrado");
+      return res.status(200).json(result.recordset[0]);
     } catch (error) {
       return res.status(400).json(error.message);
     }
@@ -49,10 +50,8 @@ const dentistsController = {
       if (!id) {
         throw new Error("ID inválido.");
       }
-      const result = await execSQLQuery("DELETE FROM Dentistas WHERE ID=@id", [
-        { name: "id", type: sql.Int, value: id },
-      ]);
-      return res.status(200).json(result.recordset);
+      await execSQLQuery("DELETE FROM Dentistas WHERE ID=@id", [{ name: "id", type: sql.Int, value: id }]);
+      return res.status(200).json("registro deletado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
     }
@@ -65,11 +64,11 @@ const dentistsController = {
       if (!id || !name) {
         throw new Error("ID e nome são campos obrigatórios.");
       }
-      const result = await execSQLQuery("UPDATE Dentistas SET Nome=@name WHERE ID=@id", [
+      await execSQLQuery("UPDATE Dentistas SET Nome=@name WHERE ID=@id", [
         { name: "id", type: sql.Int, value: id },
         { name: "name", type: sql.NVarChar, value: name },
       ]);
-      return res.status(200).json(result.recordset);
+      return res.status(200).json("registro alterado com sucesso");
     } catch (error) {
       return res.status(400).send(error.message);
     }
