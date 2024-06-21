@@ -48,7 +48,12 @@ const config = {
 };
 ```
 
-Se por acaso você já tem um banco de dados chamado "N3" rodando não irá funcionar. Neste caso, ou altere o nome do banco de dados que será criado no arquivo src/database.js na propriedade const `createDbQuery = CREATE DATABASE N3;` alterando `N3` para o nome desejado:
+Se por acaso você já tem um banco de dados chamado "N3" rodando não irá funcionar. Neste caso, ou altere o nome do banco de dados que será criado no arquivo src/database.js nas propriedades:
+```javascript
+const checkDbQuery = `SELECT database_id FROM sys.databases WHERE name = 'N3'`;
+const createDbQuery = `CREATE DATABASE N3`;
+```
+alterando `N3` para o nome desejado.
 
 ```javascript
 async function createDatabase() {
@@ -82,6 +87,11 @@ Para a rodar a api:
 
 Rodando com sucesso, deve logar no console:
 ```bash
+[nodemon] 3.1.3
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node src/app.js
 App listening on port: 3001
 Connected to SQL Server
 Database N3 created successfully
